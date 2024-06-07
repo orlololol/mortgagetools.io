@@ -1,14 +1,14 @@
-"use client";
-
 import React, { useState } from "react";
 import axios from "axios";
 
 const Home: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
+  const [uploadMessage, setUploadMessage] = useState<string>("");
 
   const onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
       setFile(event.target.files[0]);
+      setUploadMessage(""); // Clear the upload message when a new file is selected
     }
   };
 
@@ -19,7 +19,7 @@ const Home: React.FC = () => {
 
       try {
         const response = await axios.post(
-          "https://my-flask-app-bemrt5sdsq-uc.a.run.app/upload",
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/upload`,
           formData,
           {
             headers: {
@@ -28,8 +28,10 @@ const Home: React.FC = () => {
           }
         );
         console.log("File uploaded successfully:", response.data);
+        setUploadMessage("Upload successful!"); // Set success message
       } catch (error) {
         console.error("Error uploading file:", error);
+        setUploadMessage("Upload failed, please try again."); // Set error message
       }
     }
   };
@@ -39,6 +41,8 @@ const Home: React.FC = () => {
       <h1>Upload a file</h1>
       <input type="file" onChange={onFileChange} />
       <button onClick={onFileUpload}>Upload</button>
+      {uploadMessage && <div>{uploadMessage}</div>}{" "}
+      {/* Display upload message */}
     </div>
   );
 };
