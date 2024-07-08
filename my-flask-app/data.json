@@ -1,0 +1,116 @@
+[
+    {
+        "Type": "EIN",
+        "Raw Value": "26-4384190",
+        "Normalized Value": "",
+        "Confidence": "100%"
+    },
+    {
+        "Type": "EmployeeAddress_City",
+        "Raw Value": "LAUDERHILL",
+        "Normalized Value": "",
+        "Confidence": "100%"
+    },
+    {
+        "Type": "EmployeeAddress_State",
+        "Raw Value": "FL",
+        "Normalized Value": "",
+        "Confidence": "100%"
+    },
+    {
+        "Type": "EmployeeAddress_StreetAddressOrPostalBox",
+        "Raw Value": "5031 NW 16TH STREET",
+        "Normalized Value": "",
+        "Confidence": "72%"
+    },
+    {
+        "Type": "EmployeeAddress_Zip",
+        "Raw Value": "33313",
+        "Normalized Value": "",
+        "Confidence": "98%"
+    },
+    {
+        "Type": "EmployeeName_FirstName",
+        "Raw Value": "TIFFANY",
+        "Normalized Value": "",
+        "Confidence": "99%"
+    },
+    {
+        "Type": "EmployeeName_LastName",
+        "Raw Value": "CLARK",
+        "Normalized Value": "",
+        "Confidence": "99%"
+    },
+    {
+        "Type": "EmployerAddress_City",
+        "Raw Value": "PLANTATION",
+        "Normalized Value": "",
+        "Confidence": "95%"
+    },
+    {
+        "Type": "EmployerAddress_State",
+        "Raw Value": "FL",
+        "Normalized Value": "",
+        "Confidence": "99%"
+    },
+    {
+        "Type": "EmployerAddress_StreetAddressOrPostalBox",
+        "Raw Value": "1700 NW 65TH AVE SUITE 4",
+        "Normalized Value": "",
+        "Confidence": "66%"
+    },
+    {
+        "Type": "EmployerAddress_Zip",
+        "Raw Value": "33313",
+        "Normalized Value": "",
+        "Confidence": "94%"
+    },
+    {
+        "Type": "EmployerName",
+        "Raw Value": "CRUCIAL CLICK LLC",
+        "Normalized Value": "",
+        "Confidence": "63%"
+    },
+    {
+        "Type": "FormYear",
+        "Raw Value": "2019",
+        "Normalized Value": "",
+        "Confidence": "96%"
+    },
+    {
+        "Type": "MedicareTaxWithheld",
+        "Raw Value": "29",
+        "Normalized Value": "",
+        "Confidence": "91%"
+    },
+    {
+        "Type": "MedicareWagesAndTips",
+        "Raw Value": "2003",
+        "Normalized Value": "",
+        "Confidence": "61%"
+    },
+    {
+        "Type": "SSN",
+        "Raw Value": "263-75-7485",
+        "Normalized Value": "",
+        "Confidence": "99%"
+    },
+    {
+        "Type": "SocialSecurityTaxWithheld",
+        "Raw Value": "124",
+        "Normalized Value": "",
+        "Confidence": "20%"
+    },
+    {
+        "Type": "State_Line1",
+        "Raw Value": "T",
+        "Normalized Value": "",
+        "Confidence": "40%"
+    },
+    {
+        "Type": "WagesTipsOtherCompensation",
+        "Raw Value": "2003",
+        "Normalized Value": "",
+        "Confidence": "20%"
+    }
+]

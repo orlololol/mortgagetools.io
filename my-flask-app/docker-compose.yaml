@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  web:
+    build: .
+    ports:
+      - "8081:8080"
+    env_file:
+      - .env
+    environment:
+      - APP_ENV=production
+      - FLASK_DEBUG=false
+      - UPLOAD_FOLDER=/app/uploads
+    command:
+      [
+        "gunicorn",
+        "-b",
+        ":8080",
+        "--workers",
+        "1",
+        "--threads",
+        "1",
+        "--timeout",
+        "0",
+        "wsgi:create_app('production')",
+      ]
