@@ -5,29 +5,14 @@ export const navLinks = [
     icon: "/assets/icons/home.svg",
   },
   {
-    label: "Image Restore",
-    route: "/transformations/add/restore",
+    label: "Upload Document A",
+    route: "/transformations/add/uploadDocumentA",
     icon: "/assets/icons/image.svg",
   },
   {
-    label: "Generative Fill",
-    route: "/transformations/add/fill",
+    label: "Upload Document B/C",
+    route: "/transformations/add/uploadDocumentBC",
     icon: "/assets/icons/stars.svg",
-  },
-  {
-    label: "Object Remove",
-    route: "/transformations/add/remove",
-    icon: "/assets/icons/scan.svg",
-  },
-  {
-    label: "Object Recolor",
-    route: "/transformations/add/recolor",
-    icon: "/assets/icons/filter.svg",
-  },
-  {
-    label: "Background Remove",
-    route: "/transformations/add/removeBackground",
-    icon: "/assets/icons/camera.svg",
   },
   {
     label: "Profile",
@@ -120,44 +105,19 @@ export const plans = [
 ];
 
 export const transformationTypes = {
-  restore: {
-    type: "restore",
-    title: "Restore Image",
-    subTitle: "Refine images by removing noise and imperfections",
-    config: { restore: true },
+  uploadDocumentA: {
+    type: "uploadDocumentA",
+    title: "Upload a 1040 form",
+    subTitle: "Upload and process Document A",
+    config: { documentType: "A" },
     icon: "image.svg",
   },
-  removeBackground: {
-    type: "removeBackground",
-    title: "Background Remove",
-    subTitle: "Removes the background of the image using AI",
-    config: { removeBackground: true },
+  uploadDocumentBC: {
+    type: "uploadDocumentBC",
+    title: "Upload Document B/C",
+    subTitle: "Upload and process Document B or C",
+    config: { documentType: "BC" },
     icon: "camera.svg",
-  },
-  fill: {
-    type: "fill",
-    title: "Generative Fill",
-    subTitle: "Enhance an image's dimensions using AI outpainting",
-    config: { fillBackground: true },
-    icon: "stars.svg",
-  },
-  remove: {
-    type: "remove",
-    title: "Object Remove",
-    subTitle: "Identify and eliminate objects from images",
-    config: {
-      remove: { prompt: "", removeShadow: true, multiple: true },
-    },
-    icon: "scan.svg",
-  },
-  recolor: {
-    type: "recolor",
-    title: "Object Recolor",
-    subTitle: "Identify and recolor objects from the image",
-    config: {
-      recolor: { prompt: "", to: "", multiple: true },
-    },
-    icon: "filter.svg",
   },
 };
 

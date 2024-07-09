@@ -34,6 +34,16 @@ const UserSchema = new Schema({
     type: Number,
     default: 10,
   },
+  spreadsheetIds: {
+    uploadDocumentA: {
+      type: String,
+      default: "hi",
+    },
+    uploadDocumentBC: {
+      type: String,
+      default: "bye",
+    },
+  },
 });
 
 const User = models?.User || model("User", UserSchema);

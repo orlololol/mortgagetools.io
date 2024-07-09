@@ -5,13 +5,41 @@ import { revalidatePath } from "next/cache";
 import User from "../database/models/user.model";
 import { connectToDatabase } from "../database/mongoose";
 import { handleError } from "../utils";
+import {
+  duplicateSpreadsheet,
+  shareSpreadsheet,
+} from "../../app/api/googleSheets/googleSheetsServices";
 
 // CREATE
 export async function createUser(user: CreateUserParams) {
   try {
+    console.log("Creating user", user);
     await connectToDatabase();
-
     const newUser = await User.create(user);
+
+    const templateIdA = process.env.TEMPLATE_SPREADSHEET_ID_A || "";
+    const templateIdBC = process.env.TEMPLATE_SPREADSHEET_ID_BC || "";
+
+    const spreadsheetIdA = await duplicateSpreadsheet(
+      templateIdA,
+      `User_${newUser._id}_DocumentA`
+    );
+    console.log("spreadsheetIdA created", spreadsheetIdA);
+    const spreadsheetIdBC = await duplicateSpreadsheet(
+      templateIdBC,
+      `User_${newUser._id}_DocumentBC`
+    );
+    console.log("spreadsheetIdBC created", spreadsheetIdBC);
+
+    await shareSpreadsheet(spreadsheetIdA, newUser.email);
+    await shareSpreadsheet(spreadsheetIdBC, newUser.email);
+
+    newUser.spreadsheetIds = {
+      uploadDocumentA: spreadsheetIdA,
+      uploadDocumentBC: spreadsheetIdBC,
+    };
+    await newUser.save();
+    console.log("spreadsheetIds saved to user", newUser.spreadsheetIds);
 
     return JSON.parse(JSON.stringify(newUser));
   } catch (error) {
