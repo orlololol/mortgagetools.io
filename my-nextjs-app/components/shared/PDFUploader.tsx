@@ -42,7 +42,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 interface PDFUploadFormProps {
   action: "Add" | "Update";
-  userId: string;
+  clerkId: string;
   type: "uploadDocumentA" | "uploadDocumentBC";
   creditBalance: number;
   data?: Partial<FormValues> & { _id?: string };
@@ -51,7 +51,7 @@ interface PDFUploadFormProps {
 
 const PDFUploadForm: React.FC<PDFUploadFormProps> = ({
   action,
-  userId,
+  clerkId,
   type,
   creditBalance,
   data = null,
@@ -87,10 +87,12 @@ const PDFUploadForm: React.FC<PDFUploadFormProps> = ({
   useEffect(() => {
     const fetchSpreadsheetId = async () => {
       try {
+        console.log("Fetching spreadsheet ID for user:", clerkId);
         const response = await fetch(
-          `/api/getSpreadsheetId?userId=${userId}&type=${type}`
+          `/api/getSpreadsheetId?userId=${clerkId}&type=${type}`
         );
         if (!response.ok) {
+          console.error("Failed to fetch spreadsheet ID", response.status);
           throw new Error("Failed to fetch spreadsheet ID");
         }
         const data = await response.json();
@@ -101,7 +103,7 @@ const PDFUploadForm: React.FC<PDFUploadFormProps> = ({
     };
 
     fetchSpreadsheetId();
-  }, [userId, type]);
+  }, [clerkId, type]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);

@@ -12,32 +12,34 @@ import {
 
 // CREATE
 export async function createUser(user: CreateUserParams) {
+  console.log("Creating user", user);
   try {
-    console.log("Creating user", user);
     await connectToDatabase();
     const newUser = await User.create(user);
+    if (newUser) {
+      const templateIdA = process.env.TEMPLATE_SPREADSHEET_ID_A || "";
+      const templateIdBC = process.env.TEMPLATE_SPREADSHEET_ID_BC || "";
 
-    const templateIdA = process.env.TEMPLATE_SPREADSHEET_ID_A || "";
-    const templateIdBC = process.env.TEMPLATE_SPREADSHEET_ID_BC || "";
+      const spreadsheetIdA = await duplicateSpreadsheet(
+        templateIdA,
+        `User_${newUser._id}_DocumentA`
+      );
+      console.log("spreadsheetIdA created", spreadsheetIdA);
+      const spreadsheetIdBC = await duplicateSpreadsheet(
+        templateIdBC,
+        `User_${newUser._id}_DocumentBC`
+      );
+      console.log("spreadsheetIdBC created", spreadsheetIdBC);
 
-    const spreadsheetIdA = await duplicateSpreadsheet(
-      templateIdA,
-      `User_${newUser._id}_DocumentA`
-    );
-    console.log("spreadsheetIdA created", spreadsheetIdA);
-    const spreadsheetIdBC = await duplicateSpreadsheet(
-      templateIdBC,
-      `User_${newUser._id}_DocumentBC`
-    );
-    console.log("spreadsheetIdBC created", spreadsheetIdBC);
+      await shareSpreadsheet(spreadsheetIdA, newUser.email);
+      await shareSpreadsheet(spreadsheetIdBC, newUser.email);
 
-    await shareSpreadsheet(spreadsheetIdA, newUser.email);
-    await shareSpreadsheet(spreadsheetIdBC, newUser.email);
+      newUser.spreadsheetIds = {
+        uploadDocumentA: spreadsheetIdA,
+        uploadDocumentBC: spreadsheetIdBC,
+      };
+    }
 
-    newUser.spreadsheetIds = {
-      uploadDocumentA: spreadsheetIdA,
-      uploadDocumentBC: spreadsheetIdBC,
-    };
     await newUser.save();
     console.log("spreadsheetIds saved to user", newUser.spreadsheetIds);
 
@@ -49,6 +51,7 @@ export async function createUser(user: CreateUserParams) {
 
 // READ
 export async function getUserById(userId: string) {
+  console.log("Fetching user in getUserById", userId);
   try {
     await connectToDatabase();
 
@@ -81,6 +84,7 @@ export async function updateUser(clerkId: string, user: UpdateUserParams) {
 
 // DELETE
 export async function deleteUser(clerkId: string) {
+  console.log("Deleting user", clerkId);
   try {
     await connectToDatabase();
 

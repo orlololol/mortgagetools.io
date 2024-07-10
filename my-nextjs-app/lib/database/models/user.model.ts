@@ -37,11 +37,11 @@ const UserSchema = new Schema({
   spreadsheetIds: {
     uploadDocumentA: {
       type: String,
-      default: "hi",
+      default: "",
     },
     uploadDocumentBC: {
       type: String,
-      default: "bye",
+      default: "",
     },
   },
 });

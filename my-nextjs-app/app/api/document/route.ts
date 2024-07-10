@@ -7,7 +7,7 @@ export async function POST(req: any, res: any) {
   try {
     const user = await getUserById(req.body.userId);
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: "User not found for post" });
     }
 
     const response = await fetch(`${API_BACKEND_URL}/process`, {

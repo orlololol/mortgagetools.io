@@ -1,4 +1,4 @@
-// pages/api/getSpreadsheetId.ts
+// app/api/getSpreadsheetId.ts
 import { NextApiRequest, NextApiResponse } from "next";
 import { getUserById } from "../../lib/actions/user.actions";
 

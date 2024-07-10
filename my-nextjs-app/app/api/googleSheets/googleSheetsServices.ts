@@ -21,6 +21,7 @@ const sheets = google.sheets({ version: "v4", auth });
 const drive = google.drive({ version: "v3", auth });
 
 export async function duplicateSpreadsheet(templateId: string, title: string) {
+  console.log("Duplicating spreadsheet starting", templateId, title);
   const { data } = await drive.files.copy({
     fileId: templateId,
     requestBody: {
@@ -31,11 +32,12 @@ export async function duplicateSpreadsheet(templateId: string, title: string) {
   if (!data.id) {
     throw new Error("Failed to duplicate spreadsheet");
   }
-
+  console.log("Duplicating spreadsheet completed with id:", data.id);
   return data.id;
 }
 
 export async function shareSpreadsheet(spreadsheetId: string, email: string) {
+  console.log("Sharing spreadsheet starting", spreadsheetId, email);
   await drive.permissions.create({
     fileId: spreadsheetId,
     requestBody: {

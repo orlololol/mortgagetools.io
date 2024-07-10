@@ -36,17 +36,17 @@ const AddTransformationTypePage = async ({
 
   let excel_link;
 
-  const handleExcelLink = () => {
-    if (type === "uploadDocumentA") {
-      excel_link =
-        "https://docs.google.com/spreadsheets/d/1P2nfwGknVV6U1BX0CsYtz0ETgppKCb1-3OAys5zeUt8/edit?usp=sharing";
-      return excel_link;
-    } else if (type === "uploadDocumentBC") {
-      excel_link =
-        "https://docs.google.com/spreadsheets/d/1NJD5DWHMscbTjvMeQwSRehu27p8If8SN_BY1G42Il1w/edit?usp=sharing";
-      return excel_link;
-    }
-  };
+  // const handleExcelLink = () => {
+  //   if (type === "uploadDocumentA") {
+  //     excel_link =
+  //       "https://docs.google.com/spreadsheets/d/1P2nfwGknVV6U1BX0CsYtz0ETgppKCb1-3OAys5zeUt8/edit?usp=sharing";
+  //     return excel_link;
+  //   } else if (type === "uploadDocumentBC") {
+  //     excel_link =
+  //       "https://docs.google.com/spreadsheets/d/1NJD5DWHMscbTjvMeQwSRehu27p8If8SN_BY1G42Il1w/edit?usp=sharing";
+  //     return excel_link;
+  //   }
+  // };
 
   return (
     <>
@@ -58,10 +58,10 @@ const AddTransformationTypePage = async ({
         <div className="mt-8">
           <PDFUploadForm
             action="Add"
-            userId={user._id}
+            clerkId={user.clerkId}
             type={transformation.type as TransformationTypeKey}
             creditBalance={user.creditBalance}
-            documentUrl={handleExcelLink()}
+            // documentUrl={handleExcelLink()}
           />
         </div>
       </section>
