@@ -15,36 +15,48 @@ export async function createUser(user: CreateUserParams) {
   console.log("Creating user", user);
   try {
     await connectToDatabase();
-    const newUser = await User.create(user);
-    if (newUser) {
-      const templateIdA = process.env.TEMPLATE_SPREADSHEET_ID_A || "";
-      const templateIdBC = process.env.TEMPLATE_SPREADSHEET_ID_BC || "";
+    let existingUser = await User.findOne({ clerkId: user.clerkId });
 
-      const spreadsheetIdA = await duplicateSpreadsheet(
-        templateIdA,
-        `User_${newUser._id}_DocumentA`
-      );
-      console.log("spreadsheetIdA created", spreadsheetIdA);
-      const spreadsheetIdBC = await duplicateSpreadsheet(
-        templateIdBC,
-        `User_${newUser._id}_DocumentBC`
-      );
-      console.log("spreadsheetIdBC created", spreadsheetIdBC);
-
-      await shareSpreadsheet(spreadsheetIdA, newUser.email);
-      await shareSpreadsheet(spreadsheetIdBC, newUser.email);
-
-      newUser.spreadsheetIds = {
-        uploadDocumentA: spreadsheetIdA,
-        uploadDocumentBC: spreadsheetIdBC,
-      };
+    if (existingUser) {
+      console.log("User with this clerkId already exists:", existingUser);
+      // Update the existing user
+      existingUser = Object.assign(existingUser, user);
+    } else {
+      // Create a new user if not found
+      existingUser = new User(user);
     }
+    const newUser = await existingUser.save();
+    console.log("User created or updated in DB", newUser);
+
+    const templateIdA = process.env.TEMPLATE_SPREADSHEET_ID_A || "";
+    const templateIdBC = process.env.TEMPLATE_SPREADSHEET_ID_BC || "";
+
+    const spreadsheetIdA = await duplicateSpreadsheet(
+      templateIdA,
+      `User_${newUser._id}_DocumentA`
+    );
+    console.log("SpreadsheetIdA created:", spreadsheetIdA);
+
+    const spreadsheetIdBC = await duplicateSpreadsheet(
+      templateIdBC,
+      `User_${newUser._id}_DocumentBC`
+    );
+    console.log("SpreadsheetIdBC created:", spreadsheetIdBC);
+
+    await shareSpreadsheet(spreadsheetIdA, newUser.email);
+    await shareSpreadsheet(spreadsheetIdBC, newUser.email);
+
+    newUser.spreadsheetIds = {
+      uploadDocumentA: spreadsheetIdA,
+      uploadDocumentBC: spreadsheetIdBC,
+    };
 
     await newUser.save();
-    console.log("spreadsheetIds saved to user", newUser.spreadsheetIds);
+    console.log("Spreadsheet IDs saved to user:", newUser.spreadsheetIds);
 
     return JSON.parse(JSON.stringify(newUser));
   } catch (error) {
+    console.error("Error creating or updating user:", error);
     handleError(error);
   }
 }
