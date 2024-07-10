@@ -1,21 +1,21 @@
 import { google } from "googleapis";
 import { GoogleAuth } from "google-auth-library";
 
-const CLIENT_EMAIL = process.env.GOOGLE_SHEETS_CLIENT_EMAIL;
-const PRIVATE_KEY = process.env.GOOGLE_SHEETS_PRIVATE_KEY?.replace(
-  /\\n/g,
-  "\n"
-);
 const SCOPES = [
   "https://www.googleapis.com/auth/spreadsheets",
   "https://www.googleapis.com/auth/drive",
 ];
 
+const base64EncodedServiceAccount =
+  process.env.GOOGLE_SHEETS_CREDENTIALS_BASE64 ?? "";
+const decodedServiceAccount = Buffer.from(
+  base64EncodedServiceAccount,
+  "base64"
+).toString("utf-8");
+const credentials = JSON.parse(decodedServiceAccount);
+
 const auth = new GoogleAuth({
-  credentials: {
-    client_email: CLIENT_EMAIL,
-    private_key: PRIVATE_KEY,
-  },
+  credentials: credentials,
   scopes: SCOPES,
 });
 
