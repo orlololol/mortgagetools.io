@@ -1,5 +1,5 @@
 import { google } from "googleapis";
-import { JWT } from "google-auth-library";
+import { GoogleAuth } from "google-auth-library";
 
 const CLIENT_EMAIL = process.env.GOOGLE_SHEETS_CLIENT_EMAIL;
 const PRIVATE_KEY = process.env.GOOGLE_SHEETS_PRIVATE_KEY?.replace(
@@ -11,9 +11,11 @@ const SCOPES = [
   "https://www.googleapis.com/auth/drive",
 ];
 
-const auth = new JWT({
-  email: CLIENT_EMAIL,
-  key: PRIVATE_KEY,
+const auth = new GoogleAuth({
+  credentials: {
+    client_email: CLIENT_EMAIL,
+    private_key: PRIVATE_KEY,
+  },
   scopes: SCOPES,
 });
 
