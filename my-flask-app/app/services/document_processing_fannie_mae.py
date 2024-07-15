@@ -19,5 +19,5 @@ def process_document_fannie_mae(file_path, document_type, pdf_name, spreadsheet_
     location = config.LOCATION
     if document_type == '1040':
         processor_id = config.SPLITTER_PROCESSOR_ID 
-        process_1040_document(project_id, location, processor_id, pdf_name, file_path)
+        process_1040_document(project_id, location, processor_id, pdf_name, file_path, spreadsheet_id=spreadsheet_id)
     
