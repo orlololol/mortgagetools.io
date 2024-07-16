@@ -135,3 +135,17 @@ export async function updateCredits(userId: string, creditFee: number) {
     handleError(error);
   }
 }
+
+// GET USER ID FROM CLERK ID
+export async function getUserIdFromClerkId(clerkId: string) {
+  try {
+    const user = await User.findOne({ clerkId: clerkId });
+    if (!user) {
+      throw new Error("User not found");
+    }
+    return user._id.toString(); // Convert ObjectId to string
+  } catch (error) {
+    console.error("Error finding user:", error);
+    throw error;
+  }
+}

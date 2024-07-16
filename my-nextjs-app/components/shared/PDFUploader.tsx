@@ -15,7 +15,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  updateCredits,
+  getUserIdFromClerkId,
+} from "@/lib/actions/user.actions";
+import { creditFee } from "@/constants";
 import { CustomField } from "./CustomField";
+import { ConfirmationModal } from "./ConfirmationModal";
 import { InsufficientCreditsModal } from "./InsufficientCreditsModal";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
@@ -60,6 +66,7 @@ const PDFUploadForm: React.FC<PDFUploadFormProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [spreadsheetId, setSpreadsheetId] = useState<string | null>(null);
   const router = useRouter();
 
@@ -105,9 +112,21 @@ const PDFUploadForm: React.FC<PDFUploadFormProps> = ({
     fetchSpreadsheetId();
   }, [clerkId, type]);
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsSubmitting(true);
+  const onProcessHandler = () => {
+    if (creditBalance < Math.abs(creditFee)) {
+      alert("You do not have enough credits to process the PDF.");
+      return;
+    }
+    setIsModalOpen(true);
+  };
 
+  const handleConfirmProcess = () => {
+    setIsModalOpen(false);
+    setIsProcessing(true);
+    form.handleSubmit(onSubmit)();
+  };
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       const formData = new FormData();
       formData.append(
@@ -119,14 +138,7 @@ const PDFUploadForm: React.FC<PDFUploadFormProps> = ({
       if (values.files[0]?.file) {
         formData.append("file", values.files[0].file);
       } else {
-        console.error("No file selected");
-        setIsSubmitting(false);
-        return;
-      }
-
-      console.log("FormData contents:");
-      for (let [key, value] of formData.entries()) {
-        console.log(key, value);
+        throw new Error("No file selected");
       }
 
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "";
@@ -135,65 +147,38 @@ const PDFUploadForm: React.FC<PDFUploadFormProps> = ({
         body: formData,
       });
 
-      console.log("Response status:", response.status);
-
-      const responseText = await response.text();
-      console.log("Response text:", responseText);
-
       if (!response.ok) {
-        throw new Error(`Failed to process PDF: ${responseText}`);
+        throw new Error(`Failed to process PDF: ${await response.text()}`);
       }
 
-      const result = JSON.parse(responseText);
+      const result = await response.json();
       console.log("Processing result:", result);
+      const userId = await getUserIdFromClerkId(clerkId);
+      // Deduct credits after successful processing
+      await updateCredits(userId, creditFee);
+
+      // Optionally, show a success message or redirect the user
+      alert("PDF processed successfully and credits deducted.");
+      // router.push('/success-page');
     } catch (error) {
       console.error("Error processing PDF:", error);
+      alert("An error occurred while processing the PDF. Please try again.");
+    } finally {
+      setIsProcessing(false);
     }
-
-    setIsSubmitting(false);
   }
-
-  const onProcessHandler = async () => {
-    setIsProcessing(true);
-
-    // Pre-processing logic here
-    // Example: Check if the user has enough credits
-    if (creditBalance <= 0) {
-      alert("You do not have enough credits to process the PDF.");
-      setIsProcessing(false);
-      return;
-    }
-
-    // Example: Confirm user action
-    const userConfirmed = confirm("Are you sure you want to process the PDFs?");
-    if (!userConfirmed) {
-      setIsProcessing(false);
-      return;
-    }
-
-    // // Example: Deduct credits from user's balance
-    // try {
-    //   await deductCredits(userId, creditFee);
-    // } catch (error) {
-    //   console.error("Failed to deduct credits:", error);
-    //   alert("Failed to deduct credits. Please try again.");
-    //   setIsProcessing(false);
-    //   return;
-    // }
-
-    // Proceed with the main processing logic
-    startTransition(async () => {
-      // Your processing logic here
-    });
-
-    setIsProcessing(false);
-  };
 
   return (
     <div>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          {creditBalance < 0 && <InsufficientCreditsModal />}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            onProcessHandler();
+          }}
+          className="space-y-8"
+        >
+          {creditBalance < Math.abs(creditFee) && <InsufficientCreditsModal />}
           <div className="flex flex-row space-x-20">
             <div className="my-4">
               {type === "uploadDocumentBC" && (
@@ -253,8 +238,10 @@ const PDFUploadForm: React.FC<PDFUploadFormProps> = ({
                   <Button
                     type="button"
                     className="submit-button capitalize"
-                    disabled={isProcessing}
-                    onClick={() => onSubmit(form.getValues())}
+                    disabled={
+                      isProcessing || creditBalance < Math.abs(creditFee)
+                    }
+                    onClick={onProcessHandler}
                   >
                     {isProcessing ? "Processing..." : "Process PDFs"}
                   </Button>
@@ -272,6 +259,11 @@ const PDFUploadForm: React.FC<PDFUploadFormProps> = ({
             </div>
           </div>
         </form>
+        <ConfirmationModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onConfirm={handleConfirmProcess}
+        />
       </Form>
     </div>
   );
