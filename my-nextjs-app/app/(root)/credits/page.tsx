@@ -9,7 +9,7 @@ import { plans } from "@/constants";
 import { getUserById } from "@/lib/actions/user.actions";
 import Checkout from "@/components/shared/Checkout";
 
-const Credits = async () => {
+const CombinedCreditsProfile = async () => {
   const { userId } = auth();
 
   if (!userId) redirect("/sign-in");
@@ -19,11 +19,32 @@ const Credits = async () => {
   return (
     <div className="justify-center">
       <Header
-        title="Buy Credits"
-        subtitle="Choose a credit package that suits your needs!"
+        title="Upgrade Your Account"
+        subtitle="View your balance and purchase more uploads"
       />
 
+      {/* Profile Section */}
+      <section className="profile mb-8">
+        <div className="profile-balance bg-light-2 rounded-lg p-6 flex flex-col items-center justify-center text-center">
+          <p className="p-14-medium md:p-16-medium justify-center">
+            UPLOADS AVAILABLE
+          </p>
+          <div className="mt-4 flex items-center gap-4">
+            <Image
+              src="/assets/icons/coins.svg"
+              alt="coins"
+              width={50}
+              height={50}
+              className="size-9 md:size-12"
+            />
+            <h2 className="h2-bold text-dark-600">{user.creditBalance}</h2>
+          </div>
+        </div>
+      </section>
+
+      {/* Buy Credits Section */}
       <section>
+        <h3 className="h3-bold mb-5">Buy More Uploads</h3>
         <ul className="credits-list">
           {plans.map((plan) => (
             <li key={plan.name} className="credits-item">
@@ -33,7 +54,7 @@ const Credits = async () => {
                   {plan.name}
                 </p>
                 <p className="h1-semibold text-dark-600">${plan.price}</p>
-                <p className="p-16-regular">{plan.credits} Credits</p>
+                <p className="p-16-regular">{plan.credits} Uploads</p>
               </div>
 
               {/* Inclusions */}
@@ -78,4 +99,4 @@ const Credits = async () => {
   );
 };
 
-export default Credits;
+export default CombinedCreditsProfile;
