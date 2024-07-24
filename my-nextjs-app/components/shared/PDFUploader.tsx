@@ -252,8 +252,8 @@ const PDFUploadForm: React.FC<PDFUploadFormProps> = ({
               {spreadsheetId && (
                 <iframe
                   src={`https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit?usp=sharing`}
-                  width="700px"
-                  height="700px"
+                  width="1300px"
+                  height="1000px"
                 ></iframe>
               )}
             </div>
