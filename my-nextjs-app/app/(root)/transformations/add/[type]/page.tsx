@@ -34,7 +34,7 @@ const AddTransformationTypePage = async ({
     redirect("/404"); // Handle invalid transformation type
   }
 
-  let excel_link;
+  // let excel_link;
 
   // const handleExcelLink = () => {
   //   if (type === "uploadDocumentA") {

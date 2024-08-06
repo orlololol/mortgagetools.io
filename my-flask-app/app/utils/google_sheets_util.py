@@ -56,20 +56,38 @@ class SheetPopulator:
         date = datetime.strptime(date_str, "%m/%d/%Y")
         year = date.year
         month = date.month
+        day = date.day
         days_in_month = calendar.monthrange(year, month)[1]
-        return days_in_month
+        return month, day, days_in_month
 
     def update_value(self, cell, value):
         self.worksheet.update_value(cell, value)
 
-    def get_earning_type(self, description):
+    def get_earning_type(description):
         # Assume description might have some indicator of type
-        if "Commission" in description:
+        if "commission" in description:
             return "Commission"
-        elif "Bonus" in description:
+        elif "bonus" in description:
             return "Bonus"
-        elif "Overtime" in description:
+        elif "overtime" in description:
             return "Bonus"
+        elif "regular" in description:
+            return "Regular"
+        elif "base" in description:
+            return "Regular"
+        elif "paid time off" in description:
+            return "Regular"
+        elif "pto" in description:
+            return "Regular"
+        elif "holiday" in description:
+            return "Regular"
+        elif "vacation" in description:
+            return "Regular"
+        elif "personal" in description:
+            return "Regular"
+        elif "sick" in description:
+            return "Regular"
+        
         return None  # Default to None if no specific type is identified
     
     def populate_sheet(self, is_w2, data, general_cell_map=None, earnings_cell_map=None):
@@ -77,55 +95,98 @@ class SheetPopulator:
             combined_earnings = 0
             first_earning_processed = False
             start_date, end_date, earnings_this_period, paydate = None, None, None, None
+            regular_earnings = 0
+            is_salary = False
+            eoy_paystub = False
+            eoy_regular_earnings = 0
+
+            # Find the first empty row
+            row_offset = 0
+            while self.worksheet.get_value(f"H{11 + row_offset}") != "":
+                row_offset += 1
+            if row_offset == 4:
+                eoy_paystub = True # Check if all spaces for regular paystubs are taken, if it is, then this paystub is an End of Year Paystub
 
             for entity in data:
-                if entity['Type'] in general_cell_map:
-                    self.update_value(general_cell_map[entity['Type']], entity['Raw Value'])
+                type = entity['Type']
+                value = entity['Raw Value']
 
-                elif entity['Type'] == "earning_item":
-                    parts = entity['Raw Value'].split()
-                    if not first_earning_processed:
-                        self.update_value(earnings_cell_map["Regular"]["rate"], parts[-4])
-                        self.update_value(earnings_cell_map["Regular"]["hours"], parts[-3])
-                        self.update_value(earnings_cell_map["Regular"]["ytd"], parts[-1])
-                        first_earning_processed = True
-                    else:
-                        earning_type = self.get_earning_type(entity['Raw Value'])
-                        if earning_type == "Commission":
-                            self.update_value(earnings_cell_map["Commission"], parts[-1])
+                if not eoy_paystub:
+                    if type in general_cell_map:
+                        self.update_value(general_cell_map[type], value)
+
+                    elif type == "earning_item":
+                        parts = value.split()
+                        earning_type = self.get_earning_type(value.lower())
+                        
+                        if earning_type == "Regular":
+                            regular_earnings += float(parts[-1].replace(',', '').replace('$', ''))
+                            if not first_earning_processed:
+                                if len(parts) == 3:
+                                    is_salary = True
+                                else:
+                                    self.worksheet.update_value(f"E{11+row_offset}", parts[-4]) # Rate
+                                    self.worksheet.update_value(f"F{11+row_offset}", parts[-3]) # Hours
+                                first_earning_processed = True
+                        elif earning_type == "Commission":
+                            # Update only YTD for Commission
+                            self.worksheet.update_value("C62", parts[-1])
                         elif earning_type == "Bonus":
+                            # Summation for Overtime and Bonus
                             combined_earnings += float(parts[-1].replace(',', '').replace('$', ''))
+                    
+                    elif type == "start_date":
+                        start_date = value
+                    elif type == "end_date":
+                        end_date = value
+                    elif type == "pay_date":
+                        paydate = value
+                    elif type == "gross_earnings_ytd":
+                        gross_earnings_ytd = value
+                    elif type == "gross_earnings":
+                        gross_earnings = value
+                
+                # End of Year Paystub
+                else:
+                    if type == "earning_item":
+                        parts = value.split()
+                        earning_type = self.get_earning_type(value.lower())
+                        if earning_type == "Regular":
+                            eoy_regular_earnings += float(parts[-1].replace(',', '').replace('$', ''))
+                    elif type == "pay_date":
+                        eoy_paydate = value
+                        eoy_month, eoy_day, eoy_month_days, eoy_year = self.get_number_of_days_in_this_month(eoy_paydate)
+                        self.worksheet.update_value(f"F24", eoy_year)
 
-                elif entity['Type'] in ["start_date", "end_date", "pay_date", "gross_earnings"]:
-                    if entity['Type'] == "start_date":
-                        start_date = entity['Raw Value']
-                    elif entity['Type'] == "end_date":
-                        end_date = entity['Raw Value']
-                    elif entity['Type'] == "pay_date":
-                        paydate = entity['Raw Value']
-                    elif entity['Type'] == "gross_earnings":
-                        earnings_this_period = entity['Raw Value']
+            if start_date and end_date and paydate:
+                period_cell, delta = self.determine_period_type(start_date, end_date)
+                if is_salary:
+                    if period_cell:
+                        self.worksheet.update_value(period_cell, gross_earnings)
+                        self.worksheet.update_value("C39", gross_earnings_ytd)
+                else:
+                    if delta == 7:
+                        self.worksheet.update_value(f"G{11 + row_offset}", "TRUE" ) # Weekly
+                    elif delta == 14:
+                        self.worksheet.update_value(f"G{11 + row_offset}", "FALSE" ) # Bi-weekly
+                    month, day, month_days = self.get_number_of_days_in_this_month(paydate)
+                    cell_value = round(day/month_days, 2) + month - 1  # Normalize to a value between 0 and 1
+                    self.worksheet.update_value(f"I{11 + row_offset}", cell_value)
+                    self.worksheet.update_value(f"G39", cell_value)
+                    self.worksheet.update_value(f"G49", cell_value)
+                    self.worksheet.update_value(f"G67", cell_value)
+                    self.worksheet.update_value(f"G82", cell_value)
+        
+            if regular_earnings > 0:
+                self.worksheet.update_value(f"H{11 + row_offset}", f"${regular_earnings:,.2f}")
+            if eoy_regular_earnings > 0:
+                self.worksheet.update_value("C24", f"${eoy_regular_earnings:,.2f}")
 
-                    if start_date and end_date and earnings_this_period and paydate:
-                        period_cell, delta = self.determine_period_type(start_date, end_date)
-                        cell_value = round(delta/self.get_number_of_days_in_this_month(paydate), 2)
-                        self.update_value("G30", (cell_value))
-                        self.update_value("G11", (cell_value))
-                        self.update_value("G39", (cell_value))
-                        self.update_value("G57", (cell_value))
-                        self.update_value("G72", (cell_value))
-                        self.update_value("C88", (cell_value))
-                        self.update_value("C97", (cell_value))
-
-                        if period_cell:
-                            self.update_value(period_cell, earnings_this_period)
-                            start_date, end_date, earnings_this_period = None, None, None  # Reset after processing
-
-            if combined_earnings > 0:
-                current_value = self.worksheet.get_value('C39').replace('$', '').replace(',', '')
-                current_value = float(current_value) if current_value else 0
-                new_total = current_value + combined_earnings
-                self.update_value('C39', f"${new_total:,.2f}")
+            # if combined_earnings > 0:
+            #     current_value = self.worksheet.get_value('C39').replace('$', '').replace(',', '')
+            #     current_value = float(current_value) if current_value else 0
+            #     new_total = current_value + combined_earnings
+            #     self.update_value('C39', f"${new_total:,.2f}")
 
         else:
             wages_tips_other_compensation = 0
@@ -135,23 +196,25 @@ class SheetPopulator:
                     wages_tips_other_compensation += float(entity['Raw Value'].replace(',', '').replace('$', ''))
                     #print(f"found value: {entity['Raw Value']} for {entity['Type']}")
                 if entity['Type'] == 'FormYear':
-                    cell = self.worksheet.cell("E12")
+                    cell = self.worksheet.cell("E19")
                     #print(f"cell value: {cell.value}")
                     if cell.value == "" or cell.value == "0":
-                        self.update_value("E12", entity['Raw Value'])
-                        self.update_value("E73", entity['Raw Value'])
+                        self.worksheet.update_value("E19", entity['Raw Value'])
+                        self.worksheet.update_value("E40", entity['Raw Value'])
+                        self.worksheet.update_value("E83", entity['Raw Value'])
                     else:
-                        self.update_value("E13", entity['Raw Value'])
-                        self.update_value("E74", entity['Raw Value'])
+                        self.worksheet.update_value("E20", entity['Raw Value'])
+                        self.worksheet.update_value("E41", entity['Raw Value'])
+                        self.worksheet.update_value("E84", entity['Raw Value'])
                     
-            if self.worksheet.cell("C12").value == "" or self.worksheet.cell("C12").value == "0":
-                self.update_value("C12", wages_tips_other_compensation)
-                self.update_value("C31", wages_tips_other_compensation)
-                self.update_value("C73", wages_tips_other_compensation)
-            else:
-                self.update_value("C13", wages_tips_other_compensation)
-                self.update_value("C32", wages_tips_other_compensation)
-                self.update_value("C74", wages_tips_other_compensation)
+                if self.worksheet.cell("C19").value == "" or self.worksheet.cell("C19").value == "0":
+                    self.worksheet.update_value("C19", wages_tips_other_compensation)
+                    self.worksheet.update_value("C40", wages_tips_other_compensation)
+                    self.worksheet.update_value("C83", wages_tips_other_compensation)
+                else:
+                    self.worksheet.update_value("C20", wages_tips_other_compensation)
+                    self.worksheet.update_value("C41", wages_tips_other_compensation)
+                    self.worksheet.update_value("C84", wages_tips_other_compensation)
 
 
 class SheetPopulatorWithoutAI:

@@ -63,7 +63,8 @@ def paystub_extractor(project_id, location, processor_id, file_path, mime_type, 
 
     sheet_populator = SheetPopulator(google_sheets_credentials, google_sheets_url)
     general_cell_map = {
-        "gross_earnings_ytd": "C30"
+        "gross_earnings_ytd": "C30",
+        "employee_name": "C4",
         # Add more general entries here
     }
     earnings_cell_map = {
