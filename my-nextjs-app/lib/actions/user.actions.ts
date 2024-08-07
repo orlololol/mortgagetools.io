@@ -19,46 +19,54 @@ export async function createUser(user: CreateUserParams) {
 
     if (existingUser) {
       console.log("User with this clerkId already exists:", existingUser);
-      // Update the existing user
       existingUser = Object.assign(existingUser, user);
     } else {
-      // Create a new user if not found
       existingUser = new User(user);
     }
     const newUser = await existingUser.save();
     console.log("User created or updated in DB", newUser);
 
-    setTimeout(async () => {
-      const templateIdA = process.env.TEMPLATE_SPREADSHEET_ID_A || "";
-      const templateIdBC = process.env.TEMPLATE_SPREADSHEET_ID_BC || "";
+    // Schedule spreadsheet operations
+    setTimeout(() => handleSpreadsheetOperations(newUser), 1000);
 
-      const spreadsheetIdA = await duplicateSpreadsheet(
-        templateIdA,
-        `User_${newUser._id}_DocumentA`
-      );
-      console.log("SpreadsheetIdA created:", spreadsheetIdA);
-
-      const spreadsheetIdBC = await duplicateSpreadsheet(
-        templateIdBC,
-        `User_${newUser._id}_DocumentBC`
-      );
-      console.log("SpreadsheetIdBC created:", spreadsheetIdBC);
-
-      await shareSpreadsheet(spreadsheetIdA, newUser.email);
-      await shareSpreadsheet(spreadsheetIdBC, newUser.email);
-
-      newUser.spreadsheetIds = {
-        uploadDocumentA: spreadsheetIdA,
-        uploadDocumentBC: spreadsheetIdBC,
-      };
-
-      await newUser.save();
-      console.log("Spreadsheet IDs saved to user:", newUser.spreadsheetIds);
-    });
     return JSON.parse(JSON.stringify(newUser));
   } catch (error) {
-    console.error("Error creating or updating user:", error);
+    console.error("Error creating user:", error);
     handleError(error);
+  }
+}
+
+async function handleSpreadsheetOperations(user: any) {
+  console.log("Starting spreadsheet operations for user:", user._id);
+  const templateIdA = process.env.TEMPLATE_SPREADSHEET_ID_A || "";
+  const templateIdBC = process.env.TEMPLATE_SPREADSHEET_ID_BC || "";
+
+  try {
+    const spreadsheetIdA = await duplicateSpreadsheet(
+      templateIdA,
+      `Fannie Mae 1040 Spreadsheet`
+    );
+    console.log("SpreadsheetIdA created:", spreadsheetIdA);
+
+    const spreadsheetIdBC = await duplicateSpreadsheet(
+      templateIdBC,
+      `Income Calculation Spreadsheet`
+    );
+    console.log("SpreadsheetIdBC created:", spreadsheetIdBC);
+
+    await shareSpreadsheet(spreadsheetIdA, user.email);
+    await shareSpreadsheet(spreadsheetIdBC, user.email);
+
+    user.spreadsheetIds = {
+      uploadDocumentA: spreadsheetIdA,
+      uploadDocumentBC: spreadsheetIdBC,
+    };
+
+    await user.save();
+    console.log("Spreadsheet IDs saved to user:", user.spreadsheetIds);
+  } catch (error) {
+    console.error("Error in spreadsheet operations:", error);
+    // Here you could implement a retry mechanism or alert system
   }
 }
 
