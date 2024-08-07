@@ -68,7 +68,9 @@ export async function getUserById(userId: string) {
   try {
     await connectToDatabase();
 
-    const user = await User.findOne({ clerkId: userId });
+    const user = await User.findOne({
+      $or: [{ _id: userId }, { clerkId: userId }],
+    });
 
     if (!user) throw new Error("User not found");
 
