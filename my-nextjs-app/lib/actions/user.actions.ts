@@ -28,32 +28,33 @@ export async function createUser(user: CreateUserParams) {
     const newUser = await existingUser.save();
     console.log("User created or updated in DB", newUser);
 
-    const templateIdA = process.env.TEMPLATE_SPREADSHEET_ID_A || "";
-    const templateIdBC = process.env.TEMPLATE_SPREADSHEET_ID_BC || "";
+    setTimeout(async () => {
+      const templateIdA = process.env.TEMPLATE_SPREADSHEET_ID_A || "";
+      const templateIdBC = process.env.TEMPLATE_SPREADSHEET_ID_BC || "";
 
-    const spreadsheetIdA = await duplicateSpreadsheet(
-      templateIdA,
-      `User_${newUser._id}_DocumentA`
-    );
-    console.log("SpreadsheetIdA created:", spreadsheetIdA);
+      const spreadsheetIdA = await duplicateSpreadsheet(
+        templateIdA,
+        `User_${newUser._id}_DocumentA`
+      );
+      console.log("SpreadsheetIdA created:", spreadsheetIdA);
 
-    const spreadsheetIdBC = await duplicateSpreadsheet(
-      templateIdBC,
-      `User_${newUser._id}_DocumentBC`
-    );
-    console.log("SpreadsheetIdBC created:", spreadsheetIdBC);
+      const spreadsheetIdBC = await duplicateSpreadsheet(
+        templateIdBC,
+        `User_${newUser._id}_DocumentBC`
+      );
+      console.log("SpreadsheetIdBC created:", spreadsheetIdBC);
 
-    await shareSpreadsheet(spreadsheetIdA, newUser.email);
-    await shareSpreadsheet(spreadsheetIdBC, newUser.email);
+      await shareSpreadsheet(spreadsheetIdA, newUser.email);
+      await shareSpreadsheet(spreadsheetIdBC, newUser.email);
 
-    newUser.spreadsheetIds = {
-      uploadDocumentA: spreadsheetIdA,
-      uploadDocumentBC: spreadsheetIdBC,
-    };
+      newUser.spreadsheetIds = {
+        uploadDocumentA: spreadsheetIdA,
+        uploadDocumentBC: spreadsheetIdBC,
+      };
 
-    await newUser.save();
-    console.log("Spreadsheet IDs saved to user:", newUser.spreadsheetIds);
-
+      await newUser.save();
+      console.log("Spreadsheet IDs saved to user:", newUser.spreadsheetIds);
+    });
     return JSON.parse(JSON.stringify(newUser));
   } catch (error) {
     console.error("Error creating or updating user:", error);
