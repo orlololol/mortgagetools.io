@@ -17,14 +17,17 @@ const AddTransformationTypePage = async ({
   params: { type },
 }: SearchParamProps) => {
   const { userId } = auth();
+  console.log("userId", userId);
 
   if (!userId) {
+    console.log("No userId found. Redirecting to sign-in...");
     redirect("/sign-in");
   }
 
   const user = await getUserById(userId);
 
   if (!user) {
+    console.log("User not found in database. Redirecting to sign-in...");
     redirect("/sign-in");
   }
 

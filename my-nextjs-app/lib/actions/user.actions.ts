@@ -68,11 +68,12 @@ export async function getUserById(userId: string) {
   try {
     await connectToDatabase();
 
-    const user = await User.findOne({
-      $or: [{ _id: userId }, { clerkId: userId }],
-    });
+    const user = await User.findOne({ clerkId: userId });
 
-    if (!user) throw new Error("User not found");
+    if (!user) {
+      console.log("User not found for clerkId:", userId);
+      return null;
+    }
 
     return JSON.parse(JSON.stringify(user));
   } catch (error) {
