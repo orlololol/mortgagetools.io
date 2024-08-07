@@ -27,7 +27,7 @@ export async function createUser(user: CreateUserParams) {
     console.log("User created or updated in DB", newUser);
 
     // Schedule spreadsheet operations
-    setTimeout(() => handleSpreadsheetOperations(newUser), 10000);
+    handleSpreadsheetOperations(newUser);
 
     return JSON.parse(JSON.stringify(newUser));
   } catch (error) {
