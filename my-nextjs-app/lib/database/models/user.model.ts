@@ -29,6 +29,10 @@ const UserSchema = new Schema({
     type: Number,
     default: 10,
   },
+  spreadsheetStatus: {
+    type: String,
+    default: "pending",
+  },
   spreadsheetIds: {
     uploadDocumentA: {
       type: String,

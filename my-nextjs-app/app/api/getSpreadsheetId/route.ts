@@ -1,6 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUserById } from "../../../lib/actions/user.actions";
 
+const MAX_ATTEMPTS = 30;
+const DELAY_MS = 1000;
+
+async function waitForSpreadsheetCreation(userId: string): Promise<any> {
+  let attempts = 0;
+  while (attempts < MAX_ATTEMPTS) {
+    const user = await getUserById(userId);
+    if (user.spreadsheetStatus === "completed") {
+      return user;
+    } else if (user.spreadsheetStatus === "error") {
+      throw new Error("Spreadsheet creation failed");
+    }
+    await new Promise((resolve) => setTimeout(resolve, DELAY_MS));
+    attempts++;
+  }
+  throw new Error("Spreadsheet creation timed out");
+}
+
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const userId = searchParams.get("userId");
@@ -16,8 +34,13 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const user = await getUserById(userId);
+    let user = await getUserById(userId);
     console.log("Fetched user data:", user);
+
+    if (user.spreadsheetStatus === "pending") {
+      console.log("Spreadsheet creation in progress. Waiting...");
+      user = await waitForSpreadsheetCreation(userId);
+    }
 
     let spreadsheetId;
 

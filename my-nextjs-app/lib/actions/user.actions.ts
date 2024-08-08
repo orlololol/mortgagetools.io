@@ -26,6 +26,10 @@ export async function createUser(user: CreateUserParams) {
     const newUser = await existingUser.save();
     console.log("User created or updated in DB", newUser);
 
+    // Initialize spreadsheet status
+    newUser.spreadsheetStatus = "pending";
+    await newUser.save();
+
     // Schedule spreadsheet operations
     handleSpreadsheetOperations(newUser);
 
@@ -61,7 +65,7 @@ async function handleSpreadsheetOperations(user: any) {
       uploadDocumentA: spreadsheetIdA,
       uploadDocumentBC: spreadsheetIdBC,
     };
-
+    user.spreadsheetStatus = "completed";
     await user.save();
     console.log("Spreadsheet IDs saved to user:", user.spreadsheetIds);
   } catch (error) {
